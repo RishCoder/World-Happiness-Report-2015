@@ -1,0 +1,194 @@
+### this is project on world happiness report 2015. i have downloaded the required dataset from here -- https://www.kaggle.com/unsdsn/world-happiness.
+
+## I have created this project in R.
+
+## So lets start the project code.
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+#LETS DO A R PROJECT ON WORLD HAPPINESS REPORT 2015
+
+# LETS INSTALL THE PACKAGES NEEDED
+
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("corrplot")
+install.packages("corrgram")
+
+# WE HAVE SUCCESSFULLY INSTALLED THE PACKAGES
+
+# LETS UPLOAD THE DATASET WHR 2015
+
+setwd("D:/RProgram/Capstone Project") -----  set your path to import the dataset in RStudio
+getwd()
+
+db <- read.csv("2015.csv", header = TRUE)
+
+db<- read.csv("2015.csv")
+
+View(db)
+
+#LETS REMOVE THE STANDARD ERROR COLOUMN
+
+db <- db[,-5]
+View(db)
+
+#WE HAVE REMOVED THE STANDARD ERROR COLOUMN
+
+distinct(db, Region)
+
+# Lets create a new column for classification
+
+db$continent <- NA
+
+#Australia
+
+db$continent[which(db$Region %in% c("Australia and New Zealand"))] <- "Australia"
+
+#North America
+
+db$continent[which(db$Region %in% c("North America"))] <- "North America"
+
+#Europe
+
+db$continent[which(db$Region %in% c("Western Europe", "Central and Eastern Europe"))] <- "Europe"
+
+#Africa
+
+db$continent[which(db$Region %in% c("Sub-Saharan Africa", "Middle East and Northern Africa"))] <- "Africa"
+
+#Asia
+
+db$continent[which(db$Region %in% c("Southeastern Asia", "Eastern Asia", "Southern Asia"))] <- "Asia"
+
+db$continent[which(db$Region %in% c("Latin America and Caribbean"))] <- "South America"
+
+#lets create an average of all the numerical data continet wise
+
+hp <- aggregate(db[,4:11], list(db$continent), mean)
+
+View(hp)
+
+# DATA VISUALIZATION FOR HAPPINESS REPORT
+
+#LETS START WITH BASICS
+
+summary(db)
+
+head(db,10)
+tail(db,10)
+
+View(head(db,10))
+
+View(tail(db,10))
+
+#LETS GRAPH THE MEAN DATA OF ALL CONTINENTS
+
+ggplot(hp,aes(x=Group.1, y=Happiness.Score, fill = Group.1)) + geom_bar(stat="identity") + ggtitle("Happiness Score of Each Continent") + ylab("Happiness Score") + xlab("Continents")
+
+
+#LETS FIND CORRELATION IN ALL VARIABLES
+
+col <- sapply(db, is.numeric)
+cor.data <- cor(db[,col])
+
+corrplot(cor.data, method = 'square', type = 'upper')
+
+corrplot(cor.data, method = 'number', type = 'upper')
+
+#LETS CREATE BOXPLOTS REGION WISE
+
+box <- ggplot(db, aes(x = Region, y = Happiness.Score, color = Region))
+
+box + geom_boxplot() + geom_jitter(aes(color=Country),size=1.0) + ggtitle("Happiness Score For Countries") + coord_flip() + theme(legend.position = "none")
+
+#BOXPLOTS FOR CONTINENTS
+
+ggplot(db, aes(x = continent, y = Happiness.Score, color = continent)) + geom_boxplot() + ggtitle("Happiness Score For Continents")
+
+#REGRESSION FOR ALL CONTINENTS
+
+ggplot(db, aes(x = Health..Life.Expectancy., y = Happiness.Score)) + geom_point(aes(color = continent), size = 3, alpha = 0.8)+ geom_smooth(aes(color = continent, fill = continent), method = "lm", fullrange ="TRUE")+ facet_wrap(~continent)+ theme_bw() + ggtitle("Scatter Plot For Life Expectancy")
+
+#FOR ECONOMY
+
+ggplot(db, aes(x = Economy..GDP.per.Capita., y = Happiness.Score)) + geom_point(aes(color = continent), size = 3, alpha = 0.8)+ geom_smooth(aes(color = continent, fill = continent), method = "lm", fullrange ="TRUE")+ facet_wrap(~continent)+ theme_bw() + ggtitle("Scatter Plot For Life Expectancy")
+
+#FOR FREEDOM
+
+ggplot(db, aes(x = Freedom, y = Happiness.Score)) + geom_point(aes(color = continent), size = 3, alpha = 0.8)+ geom_smooth(aes(color = continent, fill = continent), method = "lm", fullrange ="TRUE")+ facet_wrap(~continent)+ theme_bw() + ggtitle("Scatter Plot For Life Expectancy")
+
+#FOR FAMILY
+
+ggplot(db, aes(x = Health..Life.Expectancy., y = Happiness.Score)) + geom_point(aes(color = continent), size = 3, alpha = 0.8)+ geom_smooth(aes(color = continent, fill = continent), method = "lm", fullrange ="TRUE")+ facet_wrap(~continent)+ theme_bw() + ggtitle("Scatter Plot For Life Expectancy")
+
+#FOR TRUST IN GOVERNMENT
+
+ggplot(db, aes(x = Trust..Government.Corruption., y = Happiness.Score)) + geom_point(aes(color = continent), size = 3, alpha = 0.8)+ geom_smooth(aes(color = continent, fill = continent), method = "lm", fullrange ="TRUE")+ facet_wrap(~continent)+ theme_bw() + ggtitle("Scatter Plot For Trust in Govenrment")
+
+#PLOTES FOR THE MOST UNHAPPIEST PLACES, NOTICED IN BOX PLOTS
+
+box + geom_boxplot() + geom_jitter(aes(color=Country),size=1.0) + ggtitle("Happiness Score For Regions & Countries") + coord_flip() + theme(legend.position = "none")
+
+#SUB_SAHARAN AFRICA IS THE MOST UNHAPPIEST REGION
+
+#CLASSIFY ALL OF THE DATA BASED ON HAPPIEST NEUTRAL & LEAST HAPPY REGION
+
+db$happinessmeter <- NA
+
+db$happinessmeter[which(db$Region %in% c("Australia and New Zealand", "Western Europe", "North America"))] <- "Happiest"
+
+db$happinessmeter[which(db$Region %in% c("Sub-Saharan Africa"))] <- "Least Happiest"
+
+db$happinessmeter[which(db$Region %in% c("Southeastern Asia", "Southern Asia", "Middle East and Northern Africa", "Latin America and Caribbean", "Eastern Asia", "Central and Eastern Europe"))] <- "Neutral"
+
+#PLOT REGRESSION FOR ALL THREE REGION 
+
+ggplot(db, aes(x = Health..Life.Expectancy., y = Happiness.Score)) + geom_point(aes(color = happinessmeter), size=3, alpha=0.8) + geom_smooth(aes(color = happinessmeter, fill = happinessmeter), method = "lm", fullrange = T) + facet_wrap(~happinessmeter) + theme_bw()
+
+#PLOT FOR ECONOMY
+
+ggplot(db, aes(x = Economy..GDP.per.Capita., y = Happiness.Score)) + geom_point(aes(color = happinessmeter), size=3, alpha=0.8) + geom_smooth(aes(color = happinessmeter, fill = happinessmeter), method = "lm", fullrange = T) + facet_wrap(~happinessmeter) + theme_bw()
+
+#PLOT FOR FAMILY
+
+ggplot(db, aes(x = Family, y = Happiness.Score)) + geom_point(aes(color = happinessmeter), size=3, alpha=0.8) + geom_smooth(aes(color = happinessmeter, fill = happinessmeter), method = "lm", fullrange = T) + facet_wrap(~happinessmeter) + theme_bw()
+
+#PLOT FOR FREEDOM 
+
+
+ggplot(db, aes(x = Freedom, y = Happiness.Score)) + geom_point(aes(color = happinessmeter), size=3, alpha=0.8) + geom_smooth(aes(color = happinessmeter, fill = happinessmeter), method = "lm", fullrange = T) + facet_wrap(~happinessmeter) + theme_bw()
+
+#FOR GENEROSITY
+
+ggplot(db, aes(x = Generosity, y = Happiness.Score)) + geom_point(aes(color = happinessmeter), size=3, alpha=0.8) + geom_smooth(aes(color = happinessmeter, fill = happinessmeter), method = "lm", fullrange = T) + facet_wrap(~happinessmeter) + theme_bw()
+
+#FOR DYSTOPIA RESIDUAL
+
+ggplot(db, aes(x = Dystopia.Residual, y = Happiness.Score)) + geom_point(aes(color = happinessmeter), size=3, alpha=0.8) + geom_smooth(aes(color = happinessmeter, fill = happinessmeter), method = "lm", fullrange = T) + facet_wrap(~happinessmeter) + theme_bw()
+
+#WE WILL PLOY THE GDP & HEALTH EXPECTANCY ON THE WOLRD MAP NOW
+
+#WE WILL INSTALL PACKAGE RWORLDMAP PACKAGE 
+
+install.packages("rworldmap")
+
+
+d<- data.frame(country = db$Country, value = db$Economy..GDP.per.Capita.)
+
+n <- joinCountryData2Map(d, joinCode = "NAME", nameJoinColumn = "country")
+
+mapCountryData(n, nameColumnToPlot = "value", mapTitle = "World Map for GDP 2015", colourPalette = "terrain")
+
+
+#MAP FOR HEALTH EXPECTANCY
+
+d<- data.frame(country = db$Country, value = db$Health..Life.Expectancy.)
+
+n <- joinCountryData2Map(d, joinCode = "NAME", nameJoinColumn = "country")
+
+mapCountryData(n, nameColumnToPlot = "value", mapTitle = "World Map for Health Expectancy 2015", colourPalette = "terrain")
+
+#WE HAVE SUCCESSFULLY COMPLETED THE PROJECT ON WHR 2015
+
+#CONGRATULATIONS
